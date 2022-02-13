@@ -1,5 +1,5 @@
 import { redirect, Form, useActionData, useTransition } from "remix";
-import { createNote } from '~/utils/notes';
+import { createNote } from '~/utils/notes.server';
 
 export let action = async ({ request }) => {
     let formData = await request.formData();
@@ -16,7 +16,7 @@ export let action = async ({ request }) => {
         return errors;
     }
 
-    await createNote({title, description, tag});
+    await createNote(request, {title, description, tag});
 
     return redirect("/notes")
 }
@@ -25,29 +25,41 @@ export let action = async ({ request }) => {
 export default function addNote() {
     // pull in errors from our action using the useActionData() hook
     let errors = useActionData();
-    // transition will allow us to create a better user experience by updating the text of the submit button while creating the blog post
+    // transition will allow us to create a better user experience by updating the text of the submit button while creating notes
     let transition = useTransition();
 
   return (
-      <Form method="post">
-          <p>
-              <label htmlFor="">
-                  Note Title: {" "} {errors?.title && <em>Title is required</em>} <input type="text" name="title"/>
-              </label>
-            </p>
-            <p>
-                <label htmlFor="">
-                    Note Description: {" "} {errors?.description && <em>Description is required</em>} <input type="text" name="description"/>
+    <div className="container my-3">
+        <h1>Add a note</h1>
+        <Form className="my-3" method="post">
+            <div className="mb-3">
+                <label htmlFor="title" className="form-label">
+                   Note Title: {" "} {errors?.title && <em>Title is required</em>} 
+                   <input className="form-control" type="text" name="title" minLength={5} required/>
                 </label>
-            </p>
-            <p>
-                <label htmlFor="">
-                    Note Tag: {" "} {errors?.tag && <em>Tag is required</em>} <input type="text" name="tag"/>
+            </div>
+            <div className="mb-3">
+                <label htmlFor="description" className="form-label">
+                     Note Description: {" "} {errors?.description && <em>Description is required</em>} 
+                     <input type="text" name="description" className="form-control" minLength={5} required />
                 </label>
-            </p>
-            <p>
-                <button type="submit">{transition.submission ? "Creating..." : "Create Post"}</button>
-            </p>
-      </Form>
+            </div>
+            <div className="mb-3">
+                <label htmlFor="tag" className="form-label">
+                    Note Tag: {" "} {errors?.tag && <em>Tag is required</em>} 
+                    <input type="text" name="tag" className="form-control" required/>
+                </label>
+            </div>
+            <button type="submit" className="btn btn-primary">{transition.submission ? "Creating..." : "Add Note"}</button>
+        </Form>
+    </div>
   )
 } 
+
+export function ErrorBoundary() {
+    return (
+      <div className="error-container">
+        Something unexpected went wrong.
+      </div>
+    );
+}

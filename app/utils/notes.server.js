@@ -1,10 +1,16 @@
 import { PrismaClient } from '@prisma/client'
+import { requireUserId } from "~/utils/auth.server";
+
 // create a reference to prisma
 const prisma = new PrismaClient();
 
 export async function getNotes(){
+    /*
+        Fetch all notes from database. 
+    */
+
     // await prisma connection
-    await prisma.$connect()
+    await prisma.$connect();
     // grab all notes using findMany()
     // the posts in prisma.notes is the collection we created in Mongo.db
     const allNotes = await prisma.notes.findMany();
@@ -16,6 +22,10 @@ export async function getNotes(){
 }
 
 export async function getNote(id){
+    /*
+        Fetch data of a single note by id. 
+    */
+
     // setup our prisma connection
     await prisma.$connect();
 
@@ -39,6 +49,10 @@ export async function getNote(id){
 }
 
 export async function getNoteEdit(id){
+    /*
+        Fetch data of a single note including id. 
+    */
+
     //setup our prisma connection
     await prisma.$connect();
 
@@ -60,17 +74,22 @@ export async function getNoteEdit(id){
     return { id, title, description, tag };
 }
 
-export async function createNote(note){
-    console.log(note);
+export async function createNote(request, note){
+    /*
+        Create a new Note. 
+    */
+
     //Prisma connection 
-    await prisma.$connect()
+    await prisma.$connect();
+    const userId = await requireUserId(request);
     // prisma create
     await prisma.notes.create({
         data: {
+            user:userId,
+            date: new Date(),
             title: note.title,
             description: note.description,
             tag: note.tag,
-            date: Date().toLocaleString()
         }
     })
 
@@ -81,6 +100,10 @@ export async function createNote(note){
 }
 
 export async function updateNote(note){
+    /*
+        Update a Note with noteId
+    */
+
     //Prisma connection 
     await prisma.$connect()
     // prisma create

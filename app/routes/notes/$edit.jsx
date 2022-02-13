@@ -1,6 +1,5 @@
 import { redirect, Form, useActionData, useTransition, useLoaderData } from "remix";
-import { getNoteEdit } from '~/utils/notes';
-import { updateNote } from '~/utils/notes';
+import { getNoteEdit, updateNote } from '~/utils/notes.server';
 
 export let loader = async({params}) => {
     return getNoteEdit(params.edit);
@@ -23,7 +22,6 @@ export let action = async ({ request }) => {
         return errors;
     }
 
-    console.log('calling updatePost with id, title, slug, markdown: ', id, title, description, tag)
     await updateNote({id, title, description, tag});
 
     return redirect("/notes")
@@ -34,29 +32,37 @@ export default function edit() {
     let transition = useTransition();
     let note = useLoaderData();
     return (
+    <div className="container my-3">
+        <h2>Edit a Note</h2>
         <Form method="post">
-            <p>
-                <input className="hiddenBlogID" name="id" value={note.id}>
-                </input>
-            </p>
-            <p>
-                <label htmlFor="">
-                    Note Title: {" "} {errors?.title && <em>Title is required</em>} <input type="text" name="title" defaultValue={note.title}/>
+            <input className="hiddenBlogID" name="id" defaultValue={note.id} />
+            <div className="mb-3">
+                <label htmlFor="title" className="form-label">
+                    Note Title: {" "} {errors?.title && <em>Title is required</em>} 
+                    <input type="text" className="form-control" id="title" name="title" defaultValue={note.title}/>
                 </label>
-                </p>
-                <p>
-                    <label htmlFor=""> Post Description: {" "} {errors?.description && <em>Description is required</em>} 
-                    <input defaultValue={note.description} id="description" type="text" name="description"/>
+            </div>
+            <div className="col-md-12">
+                  <div className="note-description">
+                <label htmlFor="description" className="form-label"> Note Description: {" "} {errors?.description && <em>Description is required</em>} 
+                    <textarea defaultValue={note.description} name="description" id="description" minLength="60" placeholder="Description" rows="3"/>
                 </label>
-                </p>
-                <p>
-                    <label htmlFor="tag">Tag:</label>{" "} {errors?.tag && <em>Tag is required</em>} 
-                    <br />
-                    <textarea defaultValue={note.tag} name="tag" id="" rows={20} cols={30}/>
-                </p>
-                <p>
-                    <button type="submit">{transition.submission ? "Updating..." : "Update Note"}</button>
-                </p>
+                   </div>
+            </div>
+            <div className="mb-3">
+                <label htmlFor="tag" className="form-label">Tag:</label>{" "} {errors?.tag && <em>Tag is required</em>} 
+                    <input className="form-control" defaultValue={note.tag} id="tag" type="text" name="tag"/>
+            </div>
+                <button type="submit" className="btn btn-primary">{transition.submission ? "Updating..." : "Update Note"}</button>
         </Form>
+    </div>
     );
 }
+
+export function ErrorBoundary() {
+    return (
+      <div className="error-container">
+        Something unexpected went wrong. Sorry about that.
+      </div>
+    );
+  }

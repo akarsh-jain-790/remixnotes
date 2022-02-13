@@ -14,4 +14,12 @@ model notes {
   description String
   tag         String
   title       String
+  user        String   @db.ObjectId
+}
+
+model users {
+  id       String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  date     DateTime @db.Date
+  email    String   @unique(map: "email_1")
+  password String
 }
